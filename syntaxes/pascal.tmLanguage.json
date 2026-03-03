@@ -1,0 +1,86 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Pascal",
+  "scopeName": "source.pascal",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#numbers" },
+    { "include": "#keywords" },
+    { "include": "#types" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.block.pascal",
+          "begin": "\\{",
+          "end": "\\}",
+          "patterns": []
+        },
+        {
+          "name": "comment.block.pascal",
+          "begin": "\\(\\*",
+          "end": "\\*\\)",
+          "patterns": []
+        },
+        {
+          "name": "comment.line.double-slash.pascal",
+          "match": "//.*$",
+          "patterns": []
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.single.pascal",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            {
+              "name": "constant.character.escape.pascal",
+              "match": "''"
+            }
+          ]
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.integer.pascal",
+          "match": "\\b\\d+\\b"
+        },
+        {
+          "name": "constant.numeric.float.pascal",
+          "match": "\\b\\d+\\.\\d+([eE][+-]?\\d+)?\\b"
+        },
+        {
+          "name": "constant.numeric.hex.pascal",
+          "match": "\\b\\$[0-9a-fA-F]+\\b"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.pascal",
+          "match": "\\b(program|begin|end|if|then|else|for|while|repeat|until|procedure|function|var|const|type|uses|unit|interface|implementation|case|of|do|to|downto|with|in|and|or|not|div|mod|asm|inherited|override|virtual|abstract|external|forward|forward)\\b"
+        },
+        {
+          "name": "keyword.other.pascal",
+          "match": "\\b(exit|break|continue|result|nil|self|inherited|try|except|finally|raise)\\b"
+        }
+      ]
+    },
+    "types": {
+      "patterns": [
+        {
+          "name": "support.type.pascal",
+          "match": "\\b(integer|string|boolean|real|char|array|record|set|file|pointer|word|byte|longint|shortint|cardinal|single|double|extended|ansiString|wideString|pchar|object|class)\\b"
+        }
+      ]
+    }
+  }
+}
