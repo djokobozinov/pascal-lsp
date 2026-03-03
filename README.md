@@ -28,6 +28,14 @@ The extension looks for FPC in your `PATH` or in common install locations.
 
 ## Installation
 
+### From VSIX
+
+1. Obtain a `.vsix` file (from a release or by building — see *From source* below)
+2. In VS Code, open the Command Palette (**Ctrl+Shift+P** / **Cmd+Shift+P**)
+3. Run **Extensions: Install from VSIX...**
+4. Select the `.vsix` file
+5. Reload VS Code when prompted
+
 ### From source (development)
 
 1. Clone the repository
@@ -39,7 +47,7 @@ The extension looks for FPC in your `PATH` or in common install locations.
    ```
 
 3. Press **F5** in VS Code to launch an Extension Development Host with the extension loaded
-4. Alternatively, package as `.vsix`:
+4. To package a `.vsix` for distribution:
 
    ```bash
    npm run vscode:prepublish
