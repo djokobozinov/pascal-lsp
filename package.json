@@ -4,6 +4,7 @@
   "publisher": "pascal-lsp",
   "description": "Language support for Pascal: syntax highlighting, diagnostics via Free Pascal compiler",
   "version": "0.1.0",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.85.0"
   },
