@@ -9,7 +9,7 @@ import {
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { fileURLToPath } from 'url';
 import { runDiagnostics } from './diagnostics';
-import { getDocumentSymbols, findDefinition } from './navigation';
+import { getDocumentSymbols, findDefinition, getHoverInfo } from './navigation';
 import { getCompletionItems } from './completions';
 
 const connection = createConnection(ProposedFeatures.all);
@@ -78,8 +78,12 @@ connection.onDocumentSymbol((params) => {
   return getDocumentSymbols(document);
 });
 
-connection.onHover(() => {
-  return null;
+connection.onHover((params) => {
+  const document = documents.get(params.textDocument.uri);
+  if (!document) return null;
+  const info = getHoverInfo(document, params.position);
+  if (!info) return null;
+  return { contents: { kind: 'markdown', value: info } };
 });
 
 connection.onCompletion((params) => {
