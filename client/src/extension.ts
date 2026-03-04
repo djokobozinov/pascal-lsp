@@ -321,7 +321,10 @@ export function activate(context: ExtensionContext): void {
     commands.registerCommand('pascal.buildProgram', commandBuildProgram),
     commands.registerCommand('pascal.restartServer', commandRestartServer),
     commands.registerCommand('pascal.showOutput', commandShowOutput),
-    commands.registerCommand('pascal.setFpcPath', commandSetFpcPath)
+    commands.registerCommand('pascal.setFpcPath', commandSetFpcPath),
+    commands.registerCommand('pascal.formatDocument', () =>
+      commands.executeCommand('editor.action.formatDocument')
+    )
   );
 
   outputChannel.appendLine('Pascal Language Support activated.');

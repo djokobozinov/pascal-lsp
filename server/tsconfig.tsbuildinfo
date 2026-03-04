@@ -1,1 +1,1 @@
-{"root":["./src/completions.ts","./src/diagnostics.ts","./src/fpc.ts","./src/navigation.ts","./src/server.ts"],"version":"5.9.3"}
+{"root":["./src/completions.ts","./src/diagnostics.ts","./src/formatter.ts","./src/fpc.ts","./src/navigation.ts","./src/server.ts"],"version":"5.9.3"}

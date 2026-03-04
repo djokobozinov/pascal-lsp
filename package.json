@@ -62,6 +62,11 @@
         "command": "pascal.setFpcPath",
         "title": "Set FPC Path",
         "category": "Pascal"
+      },
+      {
+        "command": "pascal.formatDocument",
+        "title": "Format Document",
+        "category": "Pascal"
       }
     ],
     "keybindings": [
@@ -73,6 +78,11 @@
       {
         "command": "pascal.buildProgram",
         "key": "ctrl+shift+b",
+        "when": "editorLangId == pascal"
+      },
+      {
+        "command": "pascal.formatDocument",
+        "key": "ctrl+shift+i",
         "when": "editorLangId == pascal"
       }
     ],

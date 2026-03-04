@@ -11,6 +11,7 @@ import { fileURLToPath } from 'url';
 import { runDiagnostics } from './diagnostics';
 import { getDocumentSymbols, findDefinition, getHoverInfo } from './navigation';
 import { getCompletionItems } from './completions';
+import { formatDocument } from './formatter';
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
@@ -29,6 +30,7 @@ connection.onInitialize((params: InitializeParams) => {
         triggerCharacters: ['.'],
         resolveProvider: false,
       },
+      documentFormattingProvider: true,
     },
   };
 });
@@ -90,6 +92,12 @@ connection.onCompletion((params) => {
   const document = documents.get(params.textDocument.uri);
   if (!document) return [];
   return getCompletionItems(document, params.position, workspaceRoots);
+});
+
+connection.onDocumentFormatting((params) => {
+  const document = documents.get(params.textDocument.uri);
+  if (!document) return [];
+  return formatDocument(document, params.options);
 });
 
 documents.listen(connection);
