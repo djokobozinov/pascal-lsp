@@ -4,17 +4,25 @@ import {
   InitializeParams,
   TextDocumentSyncKind,
   DiagnosticSeverity,
+  TextDocuments,
 } from 'vscode-languageserver/node';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import { fileURLToPath } from 'url';
 import { runDiagnostics } from './diagnostics';
+import { getDocumentSymbols, findDefinition } from './navigation';
 
 const connection = createConnection(ProposedFeatures.all);
+const documents = new TextDocuments(TextDocument);
+let workspaceRoots: string[] = [];
 
 connection.onInitialize((params: InitializeParams) => {
+  workspaceRoots =
+    params.workspaceFolders?.map((wf) => fileURLToPath(wf.uri)) ?? [];
   return {
     capabilities: {
       textDocumentSync: TextDocumentSyncKind.Incremental,
       definitionProvider: true,
+      documentSymbolProvider: true,
       hoverProvider: true,
     },
   };
@@ -52,12 +60,22 @@ connection.onDidSaveTextDocument(async (params) => {
   }
 });
 
-connection.onDefinition(() => {
-  return [];
+connection.onDefinition((params) => {
+  const document = documents.get(params.textDocument.uri);
+  if (!document) return null;
+  const loc = findDefinition(document, params.position, workspaceRoots);
+  return loc ? [loc] : null;
+});
+
+connection.onDocumentSymbol((params) => {
+  const document = documents.get(params.textDocument.uri);
+  if (!document) return [];
+  return getDocumentSymbols(document);
 });
 
 connection.onHover(() => {
   return null;
 });
 
+documents.listen(connection);
 connection.listen();

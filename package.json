@@ -2,9 +2,13 @@
   "name": "pascal-lsp",
   "displayName": "Pascal Language Support",
   "publisher": "pascal-lsp",
-  "description": "Language support for Pascal: syntax highlighting, diagnostics via Free Pascal compiler",
+  "description": "Language support for Pascal: syntax highlighting, go-to-definition, diagnostics via Free Pascal compiler",
   "version": "0.1.0",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/djokobozinov/pascal-lsp.git"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -17,7 +21,11 @@
         "id": "pascal",
         "aliases": ["Pascal", "pascal"],
         "extensions": [".pas", ".pp"],
-        "configuration": "./language-configuration.json"
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icons/pascal.svg",
+          "dark": "./icons/pascal.svg"
+        }
       }
     ],
     "grammars": [

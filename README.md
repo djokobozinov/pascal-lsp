@@ -6,8 +6,10 @@ A VS Code extension providing language support for Pascal, including syntax high
 
 - **Syntax highlighting** — Full TextMate grammar for `.pas` and `.pp` files
 - **Compile-time diagnostics** — Errors, warnings, hints, and notes from FPC displayed inline on save
-- **Language configuration** — Block comments (`{ }`), line comments (`//`), brackets, and auto-closing pairs
-- **LSP support** — Language Server Protocol for diagnostics and extensibility
+- **Go to definition** — Ctrl+click (or F12) on identifiers to jump to their definition: procedures, functions, types, constants, variables, and units; supports cross-file navigation into `uses` units
+- **Document outline** — Breadcrumb and symbol list for procedures, functions, types, constants, variables, units, and classes
+- **Language configuration** — Block comments (`{ }`), line comments (`//`), brackets, auto-closing pairs, and word patterns for Pascal identifiers
+- **LSP support** — Language Server Protocol for diagnostics, navigation, and extensibility
 
 ## Requirements
 
@@ -58,7 +60,10 @@ The extension looks for FPC in your `PATH` or in common install locations.
 
 ## Usage
 
-Open a `.pas` or `.pp` file. The extension activates automatically. When you save a file, the Free Pascal compiler is invoked and any errors, warnings, or hints appear as diagnostics in the editor.
+Open a `.pas` or `.pp` file. The extension activates automatically.
+
+- **Save** — Runs the Free Pascal compiler; errors, warnings, and hints appear as inline diagnostics.
+- **Go to definition** — Ctrl+click (Windows/Linux) or Cmd+click (macOS), or press F12 with the cursor on a symbol, to jump to its definition. Works for local symbols and symbols from units listed in the `uses` clause (units must be `.pas` or `.pp` in the same directory or workspace root).
 
 ## Project structure
 
@@ -68,9 +73,10 @@ pascal-lsp/
 │   └── src/extension.ts    # Language client setup
 ├── server/                 # LSP server
 │   └── src/
-│       ├── server.ts       # LSP connection, capabilities
+│       ├── server.ts       # LSP connection, capabilities, definition provider
 │       ├── diagnostics.ts  # FPC output parsing
-│       └── fpc.ts          # FPC discovery and compilation
+│       ├── fpc.ts          # FPC discovery and compilation
+│       └── navigation.ts   # Document symbols, go-to-definition (cross-file)
 ├── syntaxes/
 │   └── pascal.tmLanguage.json
 ├── language-configuration.json
