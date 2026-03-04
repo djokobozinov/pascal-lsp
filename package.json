@@ -3,7 +3,7 @@
   "displayName": "Pascal Language Support",
   "publisher": "pascal-lsp",
   "description": "Language support for Pascal: syntax highlighting, go-to-definition, diagnostics via Free Pascal compiler",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -34,7 +34,88 @@
         "scopeName": "source.pascal",
         "path": "./syntaxes/pascal.tmLanguage.json"
       }
-    ]
+    ],
+    "commands": [
+      {
+        "command": "pascal.runProgram",
+        "title": "Run Program",
+        "category": "Pascal",
+        "icon": "$(play)"
+      },
+      {
+        "command": "pascal.buildProgram",
+        "title": "Build (Compile)",
+        "category": "Pascal",
+        "icon": "$(tools)"
+      },
+      {
+        "command": "pascal.showOutput",
+        "title": "Show Output",
+        "category": "Pascal"
+      },
+      {
+        "command": "pascal.restartServer",
+        "title": "Restart Language Server",
+        "category": "Pascal"
+      },
+      {
+        "command": "pascal.setFpcPath",
+        "title": "Set FPC Path",
+        "category": "Pascal"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "pascal.runProgram",
+        "key": "f5",
+        "when": "editorLangId == pascal && !inDebugMode"
+      },
+      {
+        "command": "pascal.buildProgram",
+        "key": "ctrl+shift+b",
+        "when": "editorLangId == pascal"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "pascal.runProgram",
+          "when": "editorLangId == pascal",
+          "group": "navigation"
+        },
+        {
+          "command": "pascal.buildProgram",
+          "when": "editorLangId == pascal",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Pascal",
+      "properties": {
+        "pascal.fpcPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the Free Pascal compiler (fpc). Leave empty to auto-detect from PATH."
+        },
+        "pascal.compilerFlags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["-Mdelphi"],
+          "description": "Additional flags passed to the Free Pascal compiler (e.g. [\"-Mdelphi\", \"-O2\"])."
+        },
+        "pascal.runInTerminal": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run compiled programs in the VS Code integrated terminal."
+        },
+        "pascal.showOutputOnBuild": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically show the Pascal output channel when building."
+        }
+      }
+    }
   },
   "scripts": {
     "compile": "tsc -b",

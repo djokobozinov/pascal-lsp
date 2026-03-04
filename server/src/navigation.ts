@@ -190,6 +190,45 @@ function findUnitDeclarationInFile(filePath: string, unitName: string): Location
   }
 }
 
+// ---------------------------------------------------------------------------
+// Hover
+// ---------------------------------------------------------------------------
+
+function kindLabel(kind: SymbolKind): string {
+  switch (kind) {
+    case SymbolKind.Function: return 'function';
+    case SymbolKind.Method:   return 'procedure';
+    case SymbolKind.Class:    return 'type / class';
+    case SymbolKind.Constant: return 'constant';
+    case SymbolKind.Variable: return 'variable';
+    case SymbolKind.Module:   return 'unit';
+    default:                  return 'symbol';
+  }
+}
+
+/**
+ * Return markdown hover content for the identifier at `position`, or null if
+ * there is nothing useful to show.
+ */
+export function getHoverInfo(document: TextDocument, position: Position): string | null {
+  const text = document.getText();
+  const identifier = getIdentifierAtPosition(text, position);
+  if (!identifier) return null;
+  if (PASCAL_KEYWORDS.test(identifier)) return null;
+
+  const lines = text.split(/\r?\n/);
+  const symbols = getSymbols(text);
+
+  for (const sym of symbols) {
+    if (sym.name.toLowerCase() !== identifier.toLowerCase()) continue;
+    const raw = lines[sym.range.start.line] ?? '';
+    const code = trimComment(raw).trim();
+    return `**${sym.name}** *(${kindLabel(sym.kind)})*\n\`\`\`pascal\n${code}\n\`\`\``;
+  }
+
+  return null;
+}
+
 export function getDocumentSymbols(document: TextDocument): DocumentSymbol[] {
   const symbols = getSymbols(document.getText());
   return symbols.map((s) => ({
