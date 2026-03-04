@@ -10,6 +10,7 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { fileURLToPath } from 'url';
 import { runDiagnostics } from './diagnostics';
 import { getDocumentSymbols, findDefinition } from './navigation';
+import { getCompletionItems } from './completions';
 
 const connection = createConnection(ProposedFeatures.all);
 const documents = new TextDocuments(TextDocument);
@@ -24,6 +25,10 @@ connection.onInitialize((params: InitializeParams) => {
       definitionProvider: true,
       documentSymbolProvider: true,
       hoverProvider: true,
+      completionProvider: {
+        triggerCharacters: ['.'],
+        resolveProvider: false,
+      },
     },
   };
 });
@@ -75,6 +80,12 @@ connection.onDocumentSymbol((params) => {
 
 connection.onHover(() => {
   return null;
+});
+
+connection.onCompletion((params) => {
+  const document = documents.get(params.textDocument.uri);
+  if (!document) return [];
+  return getCompletionItems(document, params.position, workspaceRoots);
 });
 
 documents.listen(connection);
