@@ -5,6 +5,7 @@ import {
   TextDocumentIdentifier,
 } from 'vscode-languageserver/node';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 import { compile, CompileResult } from './fpc';
 
 /**
@@ -33,7 +34,12 @@ function parseSeverity(severity: string): DiagnosticSeverity {
  */
 export function parseDiagnostics(stderr: string, documentUri: string): Diagnostic[] {
   const diagnostics: Diagnostic[] = [];
-  const documentFileName = path.basename(documentUri.replace(/^file:\/\//, ''));
+  let documentFileName: string;
+  try {
+    documentFileName = path.basename(fileURLToPath(documentUri));
+  } catch {
+    documentFileName = path.basename(documentUri.replace(/^file:\/\/\//, '/').replace(/^file:\/\//, ''));
+  }
 
   let match: RegExpExecArray | null;
   FPC_ERROR_REGEX.lastIndex = 0;

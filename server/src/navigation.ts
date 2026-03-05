@@ -9,6 +9,7 @@ import {
 import * as path from 'path';
 import * as fs from 'fs';
 import { pathToFileURL, fileURLToPath } from 'url';
+import { trimComment, getUsedUnits, resolveUnitPath } from './utils';
 
 export interface PascalSymbol {
   name: string;
@@ -28,25 +29,6 @@ const CLASS_REGEX = /\b(\w+)\s*=\s*class\b/i;
 
 const PASCAL_KEYWORDS =
   /^(procedure|function|type|const|var|unit|begin|end|if|then|else|for|while|repeat|until|and|or|not|div|mod|asm|inherited|override|virtual|abstract|external|forward|uses|interface|implementation)$/i;
-
-function trimComment(line: string): string {
-  let result = line;
-  const block1 = result.indexOf('{');
-  if (block1 >= 0) {
-    const block1End = result.indexOf('}', block1);
-    if (block1End >= 0) result = result.slice(0, block1) + result.slice(block1End + 1);
-    else result = result.slice(0, block1);
-  }
-  const block2 = result.indexOf('(*');
-  if (block2 >= 0) {
-    const block2End = result.indexOf('*)', block2);
-    if (block2End >= 0) result = result.slice(0, block2) + result.slice(block2End + 2);
-    else result = result.slice(0, block2);
-  }
-  const lineComment = result.indexOf('//');
-  if (lineComment >= 0) result = result.slice(0, lineComment);
-  return result.trim();
-}
 
 /**
  * Extract the full identifier at the given position (expands to word boundaries).
@@ -75,8 +57,8 @@ function getSymbols(text: string): PascalSymbol[] {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const codePart = line.split('//')[0] ?? line;
-    if (!codePart.trim()) continue;
+    const codePart = trimComment(line);
+    if (!codePart) continue;
 
     let match: RegExpMatchArray | null = null;
     let kind: SymbolKind = SymbolKind.Variable;
@@ -120,38 +102,13 @@ function getSymbols(text: string): PascalSymbol[] {
   return symbols;
 }
 
-function getUsedUnits(text: string): string[] {
-  const units: string[] = [];
-  const usesMatches = text.matchAll(/\buses\s+([\s\S]*?)\s*;/gi);
-  for (const m of usesMatches) {
-    const inner = m[1].trim();
-    for (const part of inner.split(',')) {
-      const ident = part.trim().split(/\s+/)[0];
-      if (ident && /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(ident)) {
-        units.push(ident);
-      }
-    }
-  }
-  return units;
-}
-
-function resolveUnitPath(unitName: string, searchDirs: string[]): string | null {
-  for (const dir of searchDirs) {
-    for (const ext of ['.pas', '.pp']) {
-      const p = path.join(dir, `${unitName}${ext}`);
-      if (fs.existsSync(p)) return p;
-    }
-  }
-  return null;
-}
-
 function findSymbolInFile(filePath: string, identifier: string): Location | null {
   try {
     const content = fs.readFileSync(filePath, 'utf-8');
     const unitUri = pathToFileURL(filePath).href;
     const symbols = getSymbols(content);
     for (const sym of symbols) {
-      if (sym.name === identifier) {
+      if (sym.name.toLowerCase() === identifier.toLowerCase()) {
         return { uri: unitUri, range: sym.selectionRange };
       }
     }
@@ -254,9 +211,10 @@ export function findDefinition(
   if (!identifier) return null;
   if (PASCAL_KEYWORDS.test(identifier)) return null;
 
+  // Case-insensitive match — Pascal identifiers are case-insensitive
   const symbols = getSymbols(text);
   for (const sym of symbols) {
-    if (sym.name === identifier) {
+    if (sym.name.toLowerCase() === identifier.toLowerCase()) {
       return { uri: document.uri, range: sym.selectionRange };
     }
   }
