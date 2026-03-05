@@ -47,10 +47,16 @@ function stripStringsAndComments(line: string): string {
 
   while (i < line.length) {
     if (line[i] === "'") {
-      // Single-quoted Pascal string
+      // Single-quoted Pascal string — '' is an escaped quote inside a string
       i++;
-      while (i < line.length && line[i] !== "'") i++;
-      i++; // closing quote
+      while (i < line.length) {
+        if (line[i] === "'") {
+          i++;
+          if (line[i] !== "'") break; // end of string (not an escaped quote)
+          // else: '' is an escaped quote, consume both and continue
+        }
+        i++;
+      }
       result += ' ';
     } else if (line[i] === '/' && line[i + 1] === '/') {
       // Line comment - stop here

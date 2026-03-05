@@ -7,6 +7,7 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import * as path from 'path';
 import * as fs from 'fs';
 import { fileURLToPath } from 'url';
+import { trimComment, getUsedUnits, resolveUnitPath } from './utils';
 
 const PASCAL_KEYWORDS = [
   'program', 'unit', 'interface', 'implementation', 'uses',
@@ -45,25 +46,6 @@ interface TypeInfo {
   parentType?: string;
 }
 
-function trimComment(line: string): string {
-  let result = line;
-  const block1 = result.indexOf('{');
-  if (block1 >= 0) {
-    const block1End = result.indexOf('}', block1);
-    if (block1End >= 0) result = result.slice(0, block1) + result.slice(block1End + 1);
-    else result = result.slice(0, block1);
-  }
-  const block2 = result.indexOf('(*');
-  if (block2 >= 0) {
-    const block2End = result.indexOf('*)', block2);
-    if (block2End >= 0) result = result.slice(0, block2) + result.slice(block2End + 2);
-    else result = result.slice(0, block2);
-  }
-  const lineComment = result.indexOf('//');
-  if (lineComment >= 0) result = result.slice(0, lineComment);
-  return result.trim();
-}
-
 function parseVarDeclarations(text: string): VarInfo[] {
   const vars: VarInfo[] = [];
   const lines = text.split(/\r?\n/);
@@ -82,8 +64,17 @@ function parseVarDeclarations(text: string): VarInfo[] {
     }
 
     if (inVarBlock) {
-      const m = code.match(/^\s*(\w+)(?:\s*,\s*\w+)*\s*:\s*(\w+)/);
-      if (m) vars.push({ name: m[1], typeName: m[2] });
+      // Handle multi-variable declarations: `a, b, c: TType`
+      const m = code.match(/^\s*([\w\s,]+?)\s*:\s*(\w+)/);
+      if (m) {
+        const typeName = m[2];
+        for (const namePart of m[1].split(',')) {
+          const name = namePart.trim();
+          if (name && /^\w+$/.test(name)) {
+            vars.push({ name, typeName });
+          }
+        }
+      }
     }
 
     // Inline: var x: TType
@@ -156,27 +147,6 @@ function getSymbolsFromText(text: string): string[] {
     }
   }
   return [...new Set(symbols)];
-}
-
-function getUsedUnits(text: string): string[] {
-  const units: string[] = [];
-  for (const m of text.matchAll(/\buses\s+([\s\S]*?)\s*;/gi)) {
-    for (const part of m[1].split(',')) {
-      const id = part.trim().split(/\s+/)[0];
-      if (id && /^[a-zA-Z_]\w*$/.test(id)) units.push(id);
-    }
-  }
-  return units;
-}
-
-function resolveUnitPath(unitName: string, dirs: string[]): string | null {
-  for (const dir of dirs) {
-    for (const ext of ['.pas', '.pp']) {
-      const p = path.join(dir, `${unitName}${ext}`);
-      if (fs.existsSync(p)) return p;
-    }
-  }
-  return null;
 }
 
 /**
