@@ -147,6 +147,24 @@ npm run watch     # incremental rebuild on change
 Press **F5** to launch the Extension Development Host.
 The LSP server can be debugged on port `6009` (attach a Node.js debugger).
 
+## Releasing
+
+1. Update `version` in `package.json` (semver).
+2. Update `CHANGELOG.md` — move entries from `[Unreleased]` to a new version heading.
+3. Build and package:
+   ```bash
+   npm run compile
+   npx vsce package
+   ```
+4. Commit, tag, and push:
+   ```bash
+   git add package.json CHANGELOG.md
+   git commit -m "chore: release v0.2.0"
+   git tag v0.2.0
+   git push && git push --tags
+   ```
+5. Create a [GitHub Release](https://github.com/djokobozinov/pascal-lsp/releases/new): choose the tag, paste changelog notes, attach `pascal-lsp-<version>.vsix`.
+
 ---
 
 ## License
