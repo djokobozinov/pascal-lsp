@@ -62,7 +62,7 @@ export async function compile(filePath: string): Promise<CompileResult> {
     };
   }
 
-  const args = ['-Mdelphi', '-v0', filePath];
+  const args = ['-Mdelphi', '-vew', filePath];
 
   try {
     const { stdout, stderr } = await execFileAsync(fpcPath, args, {
