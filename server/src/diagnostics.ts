@@ -4,15 +4,17 @@ import {
   Connection,
   TextDocumentIdentifier,
 } from 'vscode-languageserver/node';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import * as path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { compile, CompileResult } from './fpc';
 
 /**
- * FPC error line format: file(line,col): Severity: message
- * Or: file(line): Severity: message  (column optional)
+ * FPC error line format: file(line,col) Severity: message
+ * Or: file(line) Severity: message  (column optional)
+ * Note: FPC uses ") " (space) not "):" before the severity keyword.
  */
-const FPC_ERROR_REGEX = /([^(]+)\((\d+),?\s*(\d+)?\):\s*(Error|Warning|Fatal|Note|Hint):\s*(.+)/gm;
+const FPC_ERROR_REGEX = /([^(]+)\((\d+),?\s*(\d+)?\)\s*(Error|Warning|Fatal|Note|Hint):\s*(.+)/gm;
 
 function parseSeverity(severity: string): DiagnosticSeverity {
   switch (severity) {
@@ -89,6 +91,28 @@ function parseAllDiagnostics(
 const compilationAffectedUris = new Map<string, Set<string>>();
 
 /**
+ * Extend diagnostic range to the full line for better visibility.
+ * Uses document content when available; otherwise keeps original range.
+ */
+function extendToFullLine(
+  diag: Diagnostic,
+  doc: TextDocument | undefined
+): Diagnostic {
+  if (!doc) return diag;
+  const { line } = diag.range.start;
+  if (line >= doc.lineCount) return diag;
+  const lineContent = doc.getText({ start: { line, character: 0 }, end: { line: line + 1, character: 0 } });
+  const endChar = lineContent.length;
+  return {
+    ...diag,
+    range: {
+      start: { line, character: 0 },
+      end: { line, character: endChar },
+    },
+  };
+}
+
+/**
  * Run diagnostics for a Pascal file and publish results to the client.
  * Publishes inline diagnostics for all files mentioned in the FPC output,
  * and clears diagnostics for files that are no longer affected.
@@ -96,7 +120,8 @@ const compilationAffectedUris = new Map<string, Set<string>>();
 export async function runDiagnostics(
   connection: Connection,
   document: TextDocumentIdentifier,
-  documentPath: string
+  documentPath: string,
+  getDocument?: (uri: string) => TextDocument | undefined
 ): Promise<void> {
   const uri = document.uri;
   const compiledFileDir = path.dirname(documentPath);
@@ -159,10 +184,18 @@ export async function runDiagnostics(
   }
 
   // Publish diagnostics for every file that has errors/warnings
+  const normalizedDocPath = path.normalize(documentPath);
   for (const [filePath, diagnostics] of byFile) {
-    const fileUri = pathToFileURL(filePath).href;
+    const normalizedFilePath = path.normalize(filePath);
+    // Use the document's URI when it's the compiled file — ensures correct matching on Windows
+    const fileUri =
+      normalizedFilePath === normalizedDocPath
+        ? uri
+        : pathToFileURL(filePath).href;
     currentAffected.add(fileUri);
-    await connection.sendDiagnostics({ uri: fileUri, diagnostics });
+    const doc = getDocument?.(fileUri);
+    const extendedDiagnostics = diagnostics.map((d) => extendToFullLine(d, doc));
+    await connection.sendDiagnostics({ uri: fileUri, diagnostics: extendedDiagnostics });
   }
 
   // Clear URIs that were previously affected but are now clean

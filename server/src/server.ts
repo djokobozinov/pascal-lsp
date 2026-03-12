@@ -45,7 +45,7 @@ documents.onDidOpen(async (event) => {
   if (!docPath.match(/\.(pas|pp)$/i)) return;
 
   try {
-    await runDiagnostics(connection, { uri }, docPath);
+    await runDiagnostics(connection, { uri }, docPath, (u) => documents.get(u));
   } catch (err) {
     connection.console.error(`Diagnostics on open failed: ${err}`);
   }
@@ -62,7 +62,7 @@ connection.onDidSaveTextDocument(async (params) => {
   connection.console.log(`Save received for: ${uri}`);
 
   try {
-    await runDiagnostics(connection, { uri }, docPath);
+    await runDiagnostics(connection, { uri }, docPath, (u) => documents.get(u));
   } catch (err) {
     connection.console.error(`Diagnostics failed: ${err}`);
     connection.sendDiagnostics({
