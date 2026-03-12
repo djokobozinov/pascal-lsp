@@ -39,6 +39,18 @@ connection.onInitialized(() => {
   connection.console.log('Pascal language server initialized');
 });
 
+documents.onDidOpen(async (event) => {
+  const uri = event.document.uri;
+  const docPath = fileURLToPath(uri);
+  if (!docPath.match(/\.(pas|pp)$/i)) return;
+
+  try {
+    await runDiagnostics(connection, { uri }, docPath);
+  } catch (err) {
+    connection.console.error(`Diagnostics on open failed: ${err}`);
+  }
+});
+
 connection.onDidSaveTextDocument(async (params) => {
   const uri = params.textDocument.uri;
   const docPath = fileURLToPath(uri);

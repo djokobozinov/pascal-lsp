@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-03-11
+
+### Added
+
+- **Diagnostics on open** — Compile errors and warnings now appear immediately when a Pascal file is opened, without requiring a save
+- **Multi-file inline errors** — Errors in unit files are shown inline in the unit file's editor, not just the file being compiled
+- **Better error range highlighting** — Error underlines now cover the full identifier token (extracted from the FPC error message) rather than a single character
+
+### Fixed
+
+- **FPC output channel bug** — FPC writes errors to stdout; the server now reads stdout (not only stderr) so errors are reliably captured and shown inline
+- **Warning visibility** — Compiler flags updated from `-v0` (suppress all) to `-vew` so warnings are shown alongside errors
+
 ## [0.2.0] - 2025-03-09
 
 ### Added
